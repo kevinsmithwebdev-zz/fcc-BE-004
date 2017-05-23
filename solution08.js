@@ -1,23 +1,17 @@
 var mongo = require('mongodb').MongoClient;
-var dbName = 'learnyoumongo';
-var sizeCheck = process.argv[2];
 
+var url = "mongodb://localhost:27017/learnyoumongo";
 
-var myUrl = 'mongodb://localhost:27017/' + dbName;
+var checkAge = parseInt(process.argv[2],10);
 
-mongo.connect(myUrl, function(e, db) {
-  if (e) throw e;
-  var prices = db.collection('prices');
-  prices.aggregate([
-      { $match: { size: sizeCheck }}, 
-      { $group: { _id: 'average', average: { $avg: '$price'}}}
-    ]).toArray(function(e, results) {
-      
-    if (e) throw e;
-    if (!results.length) throw new Error('No results found');
-
-    var data = results[0];
-    console.log(Number(data.average).toFixed(2));
-    db.close();
-  })
-})
+mongo.connect(url, function(err, db) {
+  if (err) throw (err);
+    
+  var parrotsDB = db.collection('parrots');
+    parrotsDB.count({ age: { $gt: checkAge }},
+      function(err, count) {
+        if (err) throw err;
+        console.log(count);
+        db.close();
+    }); // db.collection + count
+}); // mongo.connect
